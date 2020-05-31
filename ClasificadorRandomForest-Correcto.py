@@ -46,7 +46,7 @@ if __name__ == "__main__":
     sampleRatio = float(atribute1.count()) / float(df.count())
     atribute1sample = atribute0.sample(False, sampleRatio)
     
-    train_data = atribute0.unionAll(atribute1)
+    train_data = atribute1.unionAll(atribute1sample)
 
     #Creador de vector de features
     assembler = VectorAssembler(
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     featureIndexer = VectorIndexer(inputCol="features", outputCol="indexedFeatures", maxCategories=6).fit(train_final)
     
     #Clasificador 3
-    rf = RandomForestClassifier(labelCol="label", featuresCol="features", numTrees=10)
+    rf = RandomForestClassifier(labelCol="label", featuresCol="features", numTrees=10, maxDepth = 5)
 
     labelConverter = IndexToString(inputCol="prediction", outputCol="predictedLabel", labels=labelIndexer.labels)
 

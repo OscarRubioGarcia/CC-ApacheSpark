@@ -16,7 +16,7 @@ if __name__ == "__main__":
     sc = SparkContext(conf=conf)
     sqlC = SQLContext(sc)
 	
-	print("Version: " + sc.version)
+    print("Version: " + sc.version)
     
     data = sqlC.read.csv("hdfs:/user/ccsa32891888/filteredC-small-training.csv", header=False, sep=",", inferSchema=True)
     data.printSchema()    
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     sampleRatio = float(atribute1.count()) / float(df.count())
     atribute1sample = atribute0.sample(False, sampleRatio)
     
-    train_data = atribute0.unionAll(atribute1)
+    train_data = atribute1.unionAll(atribute1sample)
 
     #Comprobacion de desbalanceo
     targets = train_data.groupby('Class').count().collect()
@@ -66,22 +66,14 @@ if __name__ == "__main__":
     assembled_train.select("features", "Class").show(truncate=False)
     training_set = assembled_train.select("features", "Class")
 
-    assembled_test = assembler.transform(test_final)
-    assembled_test.select("features", "class").show(truncate=False)
-    
-    finalset = training_set.withColumn('New',when(training_set.Class <= -5, 0)
-                            .otherwise(1)).drop(training_set.Class)\
-        .select(col('New').alias('label'),col('features'))
+    train_final = training_set.selectExpr("Class as label", "features as features")
 
     #Clasificador 1
     lr = LogisticRegression(maxIter=10, regParam=0.3, elasticNetParam=0.8)
-    lrModel = lr.fit(finalset)
-    #lrModel.summary()
+    lrModel = lr.fit(train_final)
+    
     print("Coefficients: " + str(lrModel.coefficients))
     print("Intercept: " + str(lrModel.intercept))
-    
-    print("Coefficients: \n" + str(lrModel.coefficientMatrix))
-    print("Intercept: " + str(lrModel.interceptVector))
 
     trainingSummary = lrModel.summary
 

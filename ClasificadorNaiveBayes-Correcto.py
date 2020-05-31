@@ -46,7 +46,7 @@ if __name__ == "__main__":
     sampleRatio = float(atribute1.count()) / float(df.count())
     atribute1sample = atribute0.sample(False, sampleRatio)
     
-    train_data = atribute0.unionAll(atribute1)
+    train_data = atribute1.unionAll(atribute1sample)
 
     #Creador de vector de features
     assembler = VectorAssembler(
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     scaledFData = scaledFData.selectExpr("label as label", "scaledFeatures as features")
 
     #Clasificador 2
-    nb = NaiveBayes(smoothing=1.0, modelType="multinomial")
+    nb = NaiveBayes(smoothing=1.3, modelType="multinomial")
 
     # train the model
     model = nb.fit(scaledTData)
